@@ -157,6 +157,12 @@ export const saveBerita = (item: BeritaItem): BeritaItem[] => {
   return updated;
 };
 
+export const deleteBerita = (id: string): BeritaItem[] => {
+  const updated = getStoredBerita().filter((item) => item.id !== id);
+  localStorage.setItem(STORAGE_KEYS.BERITA, JSON.stringify(updated));
+  return updated;
+};
+
 export const getStoredPengumuman = (): PengumumanItem[] => {
   try {
     const data = localStorage.getItem(STORAGE_KEYS.PENGUMUMAN);
@@ -169,6 +175,12 @@ export const getStoredPengumuman = (): PengumumanItem[] => {
 export const savePengumuman = (item: PengumumanItem): PengumumanItem[] => {
   const current = getStoredPengumuman();
   const updated = [item, ...current];
+  localStorage.setItem(STORAGE_KEYS.PENGUMUMAN, JSON.stringify(updated));
+  return updated;
+};
+
+export const deletePengumuman = (id: string): PengumumanItem[] => {
+  const updated = getStoredPengumuman().filter((item) => item.id !== id);
   localStorage.setItem(STORAGE_KEYS.PENGUMUMAN, JSON.stringify(updated));
   return updated;
 };
@@ -186,6 +198,12 @@ export const getStoredUMKM = (): UMKMItem[] => {
 export const saveUMKM = (item: UMKMItem): UMKMItem[] => {
   const current = getStoredUMKM();
   const updated = [item, ...current];
+  localStorage.setItem(STORAGE_KEYS.UMKM, JSON.stringify(updated));
+  return updated;
+};
+
+export const deleteUMKM = (id: string): UMKMItem[] => {
+  const updated = getStoredUMKM().filter((item) => item.id !== id);
   localStorage.setItem(STORAGE_KEYS.UMKM, JSON.stringify(updated));
   return updated;
 };

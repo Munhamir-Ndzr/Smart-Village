@@ -31,10 +31,13 @@ import {
   updateLaporan, 
   getStoredBerita, 
   saveBerita, 
+  deleteBerita,
   getStoredPengumuman, 
   savePengumuman, 
+  deletePengumuman,
   getStoredUMKM, 
   saveUMKM,
+  deleteUMKM,
   clearAdminSession 
 } from '../../utils/storage';
 import {
@@ -44,7 +47,13 @@ import {
   updateLaporan as updateLaporanApi,
   fetchBerita,
   fetchPengumuman,
-  fetchUmkm
+  fetchUmkm,
+  createBerita as createBeritaApi,
+  deleteBerita as deleteBeritaApi,
+  createPengumuman as createPengumumanApi,
+  deletePengumuman as deletePengumumanApi,
+  createUmkm as createUmkmApi,
+  deleteUmkm as deleteUmkmApi
 } from '../../utils/api';
 
 interface AdminDashboardProps {
@@ -89,6 +98,14 @@ export const AdminDashboardView: React.FC<AdminDashboardProps> = ({ onLogout, on
   const [deskripsiUmkm, setDeskripsiUmkm] = useState('');
   const [kontakWaUmkm, setKontakWaUmkm] = useState('628123456789');
   const [alamatUmkm, setAlamatUmkm] = useState('RT 01 / RW 02, Desa Warung Menteng');
+
+  // Modal Pengumuman
+  const [showPengumumanModal, setShowPengumumanModal] = useState(false);
+  const [judulPengumuman, setJudulPengumuman] = useState('');
+  const [isiPengumuman, setIsiPengumuman] = useState('');
+  const [kategoriPengumuman, setKategoriPengumuman] = useState('Umum');
+  const [berlakuHinggaPengumuman, setBerlakuHinggaPengumuman] = useState('');
+  const [penanggungJawabPengumuman, setPenanggungJawabPengumuman] = useState('Pemerintah Desa Warung Menteng');
 
   const loadData = () => {
     setSuratList(getStoredPengajuanSurat());
@@ -155,6 +172,7 @@ export const AdminDashboardView: React.FC<AdminDashboardProps> = ({ onLogout, on
       tags: ['WarungMenteng', kategoriBerita]
     };
     saveBerita(newB);
+    createBeritaApi(newB).catch(() => {});
     setShowBeritaModal(false);
     setJudulBerita('');
     setRingkasanBerita('');
@@ -184,11 +202,55 @@ export const AdminDashboardView: React.FC<AdminDashboardProps> = ({ onLogout, on
       unggulan: true
     };
     saveUMKM(newU);
+    createUmkmApi(newU).catch(() => {});
     setShowUmkmModal(false);
     setNamaProduk('');
     setPemilikUmkm('');
     setHargaUmkm('');
     setDeskripsiUmkm('');
+    loadData();
+  };
+
+  const handleCreatePengumuman = (e: React.FormEvent) => {
+    e.preventDefault();
+    const newP: PengumumanItem = {
+      id: `peng-${Date.now()}`,
+      nomorSurat: `400/${String(Math.floor(1000 + Math.random() * 9000))}/PENG/WM/${new Date().getFullYear()}`,
+      judul: judulPengumuman,
+      isi: isiPengumuman,
+      kategori: kategoriPengumuman,
+      tanggal: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
+      berlakuHingga: berlakuHinggaPengumuman || '-',
+      penanggungJawab: penanggungJawabPengumuman
+    };
+    savePengumuman(newP);
+    createPengumumanApi(newP).catch(() => {});
+    setShowPengumumanModal(false);
+    setJudulPengumuman('');
+    setIsiPengumuman('');
+    setBerlakuHinggaPengumuman('');
+    setPenanggungJawabPengumuman('Pemerintah Desa Warung Menteng');
+    loadData();
+  };
+
+  const handleDeleteBerita = (b: BeritaItem) => {
+    if (!window.confirm(`Hapus berita "${b.judul}"?`)) return;
+    deleteBerita(b.id);
+    deleteBeritaApi(b.id).catch(() => {});
+    loadData();
+  };
+
+  const handleDeleteUmkm = (u: UMKMItem) => {
+    if (!window.confirm(`Hapus produk "${u.nama}"?`)) return;
+    deleteUMKM(u.id);
+    deleteUmkmApi(u.id).catch(() => {});
+    loadData();
+  };
+
+  const handleDeletePengumuman = (p: PengumumanItem) => {
+    if (!window.confirm(`Hapus pengumuman "${p.judul}"?`)) return;
+    deletePengumuman(p.id);
+    deletePengumumanApi(p.id).catch(() => {});
     loadData();
   };
 
@@ -513,13 +575,59 @@ export const AdminDashboardView: React.FC<AdminDashboardProps> = ({ onLogout, on
               {beritaList.map(b => (
                 <div key={b.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
                   <img src={b.fotoUrl} alt={b.judul} className="w-full h-32 object-cover rounded-xl" />
-                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
-                    {b.kategori}
-                  </span>
+                  <div className="flex justify-between items-center gap-2">
+                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
+                      {b.kategori}
+                    </span>
+                    <button
+                      onClick={() => handleDeleteBerita(b)}
+                      className="text-rose-500 hover:text-rose-700 transition"
+                      title="Hapus berita"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                   <h4 className="text-xs font-bold text-slate-900 line-clamp-2">{b.judul}</h4>
                   <p className="text-[11px] text-slate-500 line-clamp-2">{b.ringkasan}</p>
                 </div>
               ))}
+            </div>
+
+            <div className="pt-4 border-t border-slate-200 space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h4 className="text-sm font-extrabold text-slate-900">Pengumuman Resmi</h4>
+                  <p className="text-xs text-slate-500">Publikasi pengumuman untuk warga Desa Warung Menteng</p>
+                </div>
+                <button
+                  onClick={() => setShowPengumumanModal(true)}
+                  className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Tambah Pengumuman</span>
+                </button>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {pengumumanList.map(p => (
+                  <div key={p.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+                    <div className="flex justify-between items-start gap-2">
+                      <span className="text-[10px] font-bold text-slate-700 bg-slate-200 px-2 py-0.5 rounded">
+                        {p.kategori}
+                      </span>
+                      <button
+                        onClick={() => handleDeletePengumuman(p)}
+                        className="text-rose-500 hover:text-rose-700 transition"
+                        title="Hapus pengumuman"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <h4 className="text-xs font-bold text-slate-900">{p.judul}</h4>
+                    <p className="text-[11px] text-slate-500 line-clamp-2">{p.isi}</p>
+                    <p className="text-[10px] text-slate-400">Berlaku s/d: {p.berlakuHingga || '-'}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}
@@ -546,7 +654,16 @@ export const AdminDashboardView: React.FC<AdminDashboardProps> = ({ onLogout, on
                 <div key={u.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
                   <div className="flex justify-between items-center text-xs">
                     <span className="font-bold text-amber-800">{u.kategoriLabel}</span>
-                    <span className="font-mono font-bold text-emerald-700">{u.harga}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono font-bold text-emerald-700">{u.harga}</span>
+                      <button
+                        onClick={() => handleDeleteUmkm(u)}
+                        className="text-rose-500 hover:text-rose-700 transition"
+                        title="Hapus produk"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                   <h4 className="text-sm font-bold text-slate-900">{u.nama}</h4>
                   <p className="text-[11px] text-slate-500">Pengrajin/Toko: {u.pemilik} • {u.alamat}</p>
@@ -865,6 +982,88 @@ export const AdminDashboardView: React.FC<AdminDashboardProps> = ({ onLogout, on
                 className="w-full py-3 bg-amber-700 hover:bg-amber-800 text-white rounded-xl text-xs font-bold"
               >
                 Simpan Produk ke Katalog
+              </button>
+            </form>
+          </div>
+        )}
+
+        {/* MODAL TAMBAH PENGUMUMAN */}
+        {showPengumumanModal && (
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <form onSubmit={handleCreatePengumuman} className="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 space-y-4 max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-bold text-slate-900">Terbitkan Pengumuman Resmi</h3>
+                <button type="button" onClick={() => setShowPengumumanModal(false)} className="text-slate-400">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">Judul Pengumuman *</label>
+                <input
+                  type="text"
+                  required
+                  value={judulPengumuman}
+                  onChange={e => setJudulPengumuman(e.target.value)}
+                  placeholder="Judul pengumuman..."
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">Isi Pengumuman *</label>
+                <textarea
+                  rows={4}
+                  required
+                  value={isiPengumuman}
+                  onChange={e => setIsiPengumuman(e.target.value)}
+                  placeholder="Isi pengumuman resmi..."
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Kategori</label>
+                  <select
+                    value={kategoriPengumuman}
+                    onChange={e => setKategoriPengumuman(e.target.value)}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+                  >
+                    <option value="Umum">Umum</option>
+                    <option value="Bansos">Bansos</option>
+                    <option value="Kesehatan">Kesehatan</option>
+                    <option value="Kerja Bakti">Kerja Bakti</option>
+                    <option value="Pemerintahan">Pemerintahan</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Berlaku Sampai (opsional)</label>
+                  <input
+                    type="text"
+                    value={berlakuHinggaPengumuman}
+                    onChange={e => setBerlakuHinggaPengumuman(e.target.value)}
+                    placeholder="Contoh: 30 September 2026"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">Penanggung Jawab</label>
+                <input
+                  type="text"
+                  value={penanggungJawabPengumuman}
+                  onChange={e => setPenanggungJawabPengumuman(e.target.value)}
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold"
+              >
+                Terbitkan Pengumuman
               </button>
             </form>
           </div>

@@ -99,6 +99,40 @@ export const fetchBerita = () => api<any[]>('/api/berita');
 export const fetchPengumuman = () => api<any[]>('/api/pengumuman');
 export const fetchUmkm = () => api<any[]>('/api/umkm');
 
+// ---- KONTEN PUBLIK - CRUD (butuh token admin) ----
+export const createBerita = (data: unknown) =>
+  api<any>('/api/berita', { method: 'POST', body: data, token: authToken() });
+export const updateBerita = (id: string, updates: unknown) =>
+  api<any>(`/api/berita/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: updates,
+    token: authToken(),
+  });
+export const deleteBerita = (id: string) =>
+  api<any>(`/api/berita/${encodeURIComponent(id)}`, { method: 'DELETE', token: authToken() });
+
+export const createPengumuman = (data: unknown) =>
+  api<any>('/api/pengumuman', { method: 'POST', body: data, token: authToken() });
+export const updatePengumuman = (id: string, updates: unknown) =>
+  api<any>(`/api/pengumuman/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: updates,
+    token: authToken(),
+  });
+export const deletePengumuman = (id: string) =>
+  api<any>(`/api/pengumuman/${encodeURIComponent(id)}`, { method: 'DELETE', token: authToken() });
+
+export const createUmkm = (data: unknown) =>
+  api<any>('/api/umkm', { method: 'POST', body: data, token: authToken() });
+export const updateUmkm = (id: string, updates: unknown) =>
+  api<any>(`/api/umkm/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: updates,
+    token: authToken(),
+  });
+export const deleteUmkm = (id: string) =>
+  api<any>(`/api/umkm/${encodeURIComponent(id)}`, { method: 'DELETE', token: authToken() });
+
 // ---- FIRE-AND-FORGET (tulis ke API kalau tersedia, jangan ganggu UX) ----
 export function syncPermohonanToApi(data: unknown): void {
   if (isApiConfigured()) {
