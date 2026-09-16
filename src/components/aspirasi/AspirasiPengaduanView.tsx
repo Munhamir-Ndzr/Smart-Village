@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { LaporanAspirasi, LaporanKategori } from '../../types';
 import { getStoredLaporan, saveLaporan } from '../../utils/storage';
+import { fetchLaporan, syncLaporanToApi } from '../../utils/api';
 
 export const AspirasiPengaduanView: React.FC<{ initialTab?: LaporanKategori | 'cek-status' }> = ({ initialTab = 'pengaduan' }) => {
   const [activeTab, setActiveTab] = useState<LaporanKategori | 'cek-status'>(initialTab);
@@ -43,6 +44,9 @@ export const AspirasiPengaduanView: React.FC<{ initialTab?: LaporanKategori | 'c
 
   useEffect(() => {
     setLaporanList(getStoredLaporan());
+    fetchLaporan()
+      .then(list => { if (list) setLaporanList(list); })
+      .catch(() => {});
   }, []);
 
   const handleTabChange = (tab: LaporanKategori | 'cek-status') => {
@@ -73,6 +77,7 @@ export const AspirasiPengaduanView: React.FC<{ initialTab?: LaporanKategori | 'c
     };
 
     saveLaporan(newLap);
+    syncLaporanToApi(newLap);
     setLaporanList(getStoredLaporan());
     setGeneratedTicket(ticketNo);
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Bell, Clock, FileText, Download, CheckCircle, Search } from 'lucide-react';
 import { PengumumanItem } from '../../types';
 import { getStoredPengumuman } from '../../utils/storage';
+import { fetchPengumuman } from '../../utils/api';
 
 export const PengumumanView: React.FC = () => {
   const [pengumumanList, setPengumumanList] = useState<PengumumanItem[]>([]);
@@ -9,6 +10,9 @@ export const PengumumanView: React.FC = () => {
 
   useEffect(() => {
     setPengumumanList(getStoredPengumuman());
+    fetchPengumuman()
+      .then(list => { if (list) setPengumumanList(list); })
+      .catch(() => {});
   }, []);
 
   const filtered = pengumumanList.filter(p => 

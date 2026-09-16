@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { JENIS_SURAT_LIST } from '../../data/mockData';
 import { savePengajuanSurat } from '../../utils/storage';
+import { syncPermohonanToApi } from '../../utils/api';
 import { PageRoute } from '../../types';
 
 interface PengajuanSuratProps {
@@ -67,6 +68,7 @@ export const PengajuanSuratView: React.FC<PengajuanSuratProps> = ({ defaultSurat
     };
 
     savePengajuanSurat(newSurat);
+    syncPermohonanToApi(newSurat);
     setCreatedRegNumber(regNumber);
   };
 

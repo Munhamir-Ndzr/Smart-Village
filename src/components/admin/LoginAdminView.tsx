@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ShieldCheck, Lock, User, Key, AlertCircle, ArrowRight } from 'lucide-react';
 import { checkAdminLogin, setAdminSession } from '../../utils/storage';
+import { apiLogin, tryApi, isApiConfigured } from '../../utils/api';
 import { PageRoute } from '../../types';
 
 interface LoginAdminProps {
@@ -13,9 +14,19 @@ export const LoginAdminView: React.FC<LoginAdminProps> = ({ onLoginSuccess, onNa
   const [password, setPassword] = useState('Teknik23260041');
   const [errorMsg, setErrorMsg] = useState('');
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (checkAdminLogin(username, password)) {
+
+    const viaApi = await tryApi(() => apiLogin(username, password));
+    if (viaApi) {
+      setAdminSession(true);
+      onLoginSuccess();
+      return;
+    }
+
+    // Backend tidak dikonfigurasi/offline → fallback ke autentikasi lokal.
+    // Backend aktif tapi kredensial ditolak → tampilkan error dari server.
+    if (!isApiConfigured() && checkAdminLogin(username, password)) {
       setAdminSession(true);
       onLoginSuccess();
     } else {

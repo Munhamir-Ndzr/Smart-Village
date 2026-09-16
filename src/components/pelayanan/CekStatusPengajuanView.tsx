@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { PengajuanSurat } from '../../types';
 import { getStoredPengajuanSurat } from '../../utils/storage';
+import { fetchPermohonan } from '../../utils/api';
 
 export const CekStatusPengajuanView: React.FC<{ initialRegNumber?: string }> = ({ initialRegNumber = '' }) => {
   const [searchTerm, setSearchTerm] = useState(initialRegNumber);
@@ -35,6 +36,23 @@ export const CekStatusPengajuanView: React.FC<{ initialRegNumber?: string }> = (
         setHasSearched(true);
       }
     }
+
+    fetchPermohonan()
+      .then(remote => {
+        if (!remote) return;
+        setAllList(remote);
+        if (initialRegNumber) {
+          const match = remote.find((s: any) =>
+            String(s.nomorRegistrasi || '').toLowerCase() === initialRegNumber.toLowerCase() ||
+            s.nik === initialRegNumber
+          );
+          if (match) {
+            setSearchResult(match);
+            setHasSearched(true);
+          }
+        }
+      })
+      .catch(() => {});
   }, [initialRegNumber]);
 
   const handleSearch = (e: React.FormEvent) => {

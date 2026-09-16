@@ -12,6 +12,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { saveSuratRequest } from '../../utils/storage';
+import { syncPermohonanToApi } from '../../utils/api';
 import { PageRoute } from '../../types';
 
 interface SuratKeteranganViewProps {
@@ -127,6 +128,7 @@ export const SuratKeteranganView: React.FC<SuratKeteranganViewProps> = ({
     };
 
     saveSuratRequest(newDoc);
+    syncPermohonanToApi(newDoc);
     setSubmittedCode(regCode);
   };
 

@@ -37,6 +37,15 @@ import {
   saveUMKM,
   clearAdminSession 
 } from '../../utils/storage';
+import {
+  fetchPermohonan,
+  updatePermohonan as updatePermohonanApi,
+  fetchLaporan,
+  updateLaporan as updateLaporanApi,
+  fetchBerita,
+  fetchPengumuman,
+  fetchUmkm
+} from '../../utils/api';
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -87,6 +96,13 @@ export const AdminDashboardView: React.FC<AdminDashboardProps> = ({ onLogout, on
     setBeritaList(getStoredBerita());
     setPengumumanList(getStoredPengumuman());
     setUmkmList(getStoredUMKM());
+
+    // Ambil data terbaru dari backend bila tersedia (fallback ke localStorage).
+    fetchPermohonan().then(list => { if (list) setSuratList(list); }).catch(() => {});
+    fetchLaporan().then(list => { if (list) setLaporanList(list); }).catch(() => {});
+    fetchBerita().then(list => { if (list) setBeritaList(list); }).catch(() => {});
+    fetchPengumuman().then(list => { if (list) setPengumumanList(list); }).catch(() => {});
+    fetchUmkm().then(list => { if (list) setUmkmList(list); }).catch(() => {});
   };
 
   useEffect(() => {
@@ -100,6 +116,10 @@ export const AdminDashboardView: React.FC<AdminDashboardProps> = ({ onLogout, on
       status: suratStatus,
       catatanPetugas: suratCatatan
     });
+    updatePermohonanApi(selectedSurat.id, {
+      status: suratStatus,
+      catatanPetugas: suratCatatan
+    }).catch(() => {});
     setSelectedSurat(null);
     loadData();
   };
@@ -112,6 +132,10 @@ export const AdminDashboardView: React.FC<AdminDashboardProps> = ({ onLogout, on
       responPetugas: laporanRespon,
       tanggalRespon: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
     });
+    updateLaporanApi(selectedLaporan.id, {
+      status: laporanStatus,
+      responPetugas: laporanRespon
+    }).catch(() => {});
     setSelectedLaporan(null);
     loadData();
   };

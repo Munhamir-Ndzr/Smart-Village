@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { PageRoute, BeritaItem } from '../../types';
 import { getStoredBerita } from '../../utils/storage';
+import { fetchBerita } from '../../utils/api';
 
 interface BeritaDetailViewProps {
   beritaId?: string;
@@ -73,6 +74,23 @@ export const BeritaDetailView: React.FC<BeritaDetailViewProps> = ({ beritaId, on
     } else if (list.length > 0) {
       setCurrentBerita(list[0]);
     }
+
+    fetchBerita()
+      .then(remote => {
+        if (!remote) return;
+        setBeritaList(remote);
+        if (beritaId) {
+          const found = remote.find(b => b.id === beritaId);
+          if (found) {
+            setCurrentBerita(found);
+          } else if (remote.length > 0) {
+            setCurrentBerita(remote[0]);
+          }
+        } else if (remote.length > 0) {
+          setCurrentBerita(remote[0]);
+        }
+      })
+      .catch(() => {});
   }, [beritaId]);
 
   // Scroll to top when switching article

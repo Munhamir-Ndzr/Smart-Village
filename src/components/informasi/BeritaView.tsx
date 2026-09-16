@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { BeritaItem } from '../../types';
 import { getStoredBerita } from '../../utils/storage';
+import { fetchBerita } from '../../utils/api';
 import heroBannerImg from '../../assets/images/berita_hero_panorama_1788954557336.jpg';
 
 interface BeritaViewProps {
@@ -76,6 +77,21 @@ export const BeritaView: React.FC<BeritaViewProps> = ({ selectedBeritaId, onNavi
       const found = list.find(b => b.id === selectedBeritaId);
       if (found) setActiveBerita(found);
     }
+
+    fetchBerita()
+      .then(remote => {
+        if (!remote) return;
+        setBeritaList(remote);
+        if (selectedBeritaId) {
+          const found = remote.find(b => b.id === selectedBeritaId);
+          if (found) {
+            setActiveBerita(found);
+          } else if (remote.length > 0) {
+            setActiveBerita(remote[0]);
+          }
+        }
+      })
+      .catch(() => {});
   }, [selectedBeritaId]);
 
   // Categories matching the screenshot layout

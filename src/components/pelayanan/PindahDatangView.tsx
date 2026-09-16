@@ -11,6 +11,7 @@ import {
   FileText
 } from 'lucide-react';
 import { saveSuratRequest } from '../../utils/storage';
+import { syncPermohonanToApi } from '../../utils/api';
 import { PageRoute } from '../../types';
 
 interface PindahDatangViewProps {
@@ -88,6 +89,7 @@ export const PindahDatangView: React.FC<PindahDatangViewProps> = ({
     };
 
     saveSuratRequest(newDoc);
+    syncPermohonanToApi(newDoc);
     setSubmittedCode(regCode);
   };
 

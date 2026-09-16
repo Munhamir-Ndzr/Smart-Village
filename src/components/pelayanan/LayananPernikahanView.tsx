@@ -8,6 +8,7 @@ import {
   Users
 } from 'lucide-react';
 import { saveSuratRequest } from '../../utils/storage';
+import { syncPermohonanToApi } from '../../utils/api';
 import { PageRoute } from '../../types';
 
 interface LayananPernikahanViewProps {
@@ -98,6 +99,7 @@ export const LayananPernikahanView: React.FC<LayananPernikahanViewProps> = ({
     };
 
     saveSuratRequest(newDoc);
+    syncPermohonanToApi(newDoc);
     setSubmittedCode(regCode);
   };
 
