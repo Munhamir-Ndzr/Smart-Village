@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { config } from './config';
+import { initDb } from './db';
 import { healthRouter } from './routes/health';
 import { authRouter } from './routes/auth';
 import { permohonanRouter } from './routes/permohonan';
@@ -38,6 +39,16 @@ app.use((_req, res) => {
   res.status(404).json({ message: 'Endpoint tidak ditemukan' });
 });
 
-app.listen(config.port, '0.0.0.0', () => {
-  console.log(`Smart Village API berjalan di http://0.0.0.0:${config.port}`);
-});
+async function start(): Promise<void> {
+  try {
+    await initDb();
+  } catch (err) {
+    console.error('Gagal terhubung ke PostgreSQL:', err);
+    process.exit(1);
+  }
+  app.listen(config.port, '0.0.0.0', () => {
+    console.log(`Smart Village API berjalan di http://0.0.0.0:${config.port}`);
+  });
+}
+
+start();

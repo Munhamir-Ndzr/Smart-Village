@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ShieldCheck, Lock, User, Key, AlertCircle, ArrowRight } from 'lucide-react';
-import { checkAdminLogin, setAdminSession } from '../../utils/storage';
+import { checkAdminLogin, setAdminSession, setAdminAuth } from '../../utils/storage';
 import { apiLogin, tryApi, isApiConfigured } from '../../utils/api';
 import { PageRoute } from '../../types';
 
@@ -11,7 +11,7 @@ interface LoginAdminProps {
 
 export const LoginAdminView: React.FC<LoginAdminProps> = ({ onLoginSuccess, onNavigate }) => {
   const [username, setUsername] = useState('akhdan');
-  const [password, setPassword] = useState('Teknik23260041');
+  const [password, setPassword] = useState('FTIK888');
   const [errorMsg, setErrorMsg] = useState('');
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -19,7 +19,14 @@ export const LoginAdminView: React.FC<LoginAdminProps> = ({ onLoginSuccess, onNa
 
     const viaApi = await tryApi(() => apiLogin(username, password));
     if (viaApi) {
-      setAdminSession(true);
+      // Backend aktif → simpan sesi + token JWT dari server.
+      setAdminAuth({
+        isLoggedIn: true,
+        role: viaApi.role,
+        name: viaApi.name,
+        username: viaApi.username,
+        token: viaApi.token,
+      });
       onLoginSuccess();
       return;
     }
@@ -30,7 +37,7 @@ export const LoginAdminView: React.FC<LoginAdminProps> = ({ onLoginSuccess, onNa
       setAdminSession(true);
       onLoginSuccess();
     } else {
-      setErrorMsg('Username atau Kata Sandi salah! (Petunjuk: akhdan / Teknik23260041)');
+      setErrorMsg('Username atau Kata Sandi salah! (Petunjuk: akhdan / FTIK888)');
     }
   };
 
@@ -101,7 +108,7 @@ export const LoginAdminView: React.FC<LoginAdminProps> = ({ onLoginSuccess, onNa
           <div className="p-3 bg-slate-50 rounded-xl text-[11px] text-slate-500 space-y-0.5 border border-slate-100">
             <p className="font-bold text-slate-700">Kredensial Default Login:</p>
             <p>Username: <code className="bg-slate-200 px-1 rounded font-bold text-slate-800">akhdan</code></p>
-            <p>Password: <code className="bg-slate-200 px-1 rounded font-bold text-slate-800">Teknik23260041</code></p>
+            <p>Password: <code className="bg-slate-200 px-1 rounded font-bold text-slate-800">FTIK888</code></p>
           </div>
 
           <button

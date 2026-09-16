@@ -191,7 +191,15 @@ export const saveUMKM = (item: UMKMItem): UMKMItem[] => {
 };
 
 // Admin Auth
-export const getAdminAuth = (): { isLoggedIn: boolean; role: string; name: string } | null => {
+export interface AdminAuth {
+  isLoggedIn: boolean;
+  role: string;
+  name: string;
+  token?: string;
+  username?: string;
+}
+
+export const getAdminAuth = (): AdminAuth | null => {
   try {
     const data = localStorage.getItem(STORAGE_KEYS.ADMIN_AUTH);
     return data ? JSON.parse(data) : null;
@@ -200,7 +208,7 @@ export const getAdminAuth = (): { isLoggedIn: boolean; role: string; name: strin
   }
 };
 
-export const setAdminAuth = (auth: { isLoggedIn: boolean; role: string; name: string } | null) => {
+export const setAdminAuth = (auth: AdminAuth | null) => {
   if (auth) {
     localStorage.setItem(STORAGE_KEYS.ADMIN_AUTH, JSON.stringify(auth));
   } else {

@@ -2,6 +2,8 @@
 // Membaca base URL dari VITE_API_URL (Vite .env.local) atau process.env (untuk tes CLI).
 // Semua fungsi silent-fallback: kalau API tidak dikonfigurasi/offline, kembalikan hasil default.
 
+import { getAdminAuth } from './storage';
+
 function resolveApiBase(): string {
   try {
     const viteEnv = (import.meta as unknown as { env?: Record<string, string | undefined> }).env;
@@ -20,13 +22,26 @@ export const isApiConfigured = (): boolean => API_BASE_URL.length > 0;
 
 const DEFAULT_TIMEOUT = 8000;
 
-async function api<T>(path: string, options: { method?: string; body?: unknown } = {}): Promise<T> {
+function authToken(): string | undefined {
+  try {
+    return getAdminAuth()?.token;
+  } catch {
+    return undefined;
+  }
+}
+
+async function api<T>(
+  path: string,
+  options: { method?: string; body?: unknown; token?: string } = {}
+): Promise<T> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT);
   try {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (options.token) headers.Authorization = `Bearer ${options.token}`;
     const res = await fetch(`${API_BASE_URL}${path}`, {
       method: options.method || 'GET',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
       signal: controller.signal,
     });
@@ -62,14 +77,22 @@ export const fetchPermohonan = () => api<any[]>('/api/permohonan');
 export const createPermohonan = (data: unknown) =>
   api<any>('/api/permohonan', { method: 'POST', body: data });
 export const updatePermohonan = (id: string, updates: unknown) =>
-  api<any>(`/api/permohonan/${encodeURIComponent(id)}`, { method: 'PATCH', body: updates });
+  api<any>(`/api/permohonan/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: updates,
+    token: authToken(),
+  });
 
 // ---- LAPORAN / ASPIRASI ----
 export const fetchLaporan = () => api<any[]>('/api/laporan');
 export const createLaporan = (data: unknown) =>
   api<any>('/api/laporan', { method: 'POST', body: data });
 export const updateLaporan = (id: string, updates: unknown) =>
-  api<any>(`/api/laporan/${encodeURIComponent(id)}`, { method: 'PATCH', body: updates });
+  api<any>(`/api/laporan/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: updates,
+    token: authToken(),
+  });
 
 // ---- KONTEN PUBLIK ----
 export const fetchBerita = () => api<any[]>('/api/berita');

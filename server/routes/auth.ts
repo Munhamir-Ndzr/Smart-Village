@@ -1,32 +1,53 @@
 import { Router, Request, Response } from 'express';
-import { randomUUID } from 'crypto';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import { query } from '../db';
+import { config } from '../config';
 
 export const authRouter = Router();
 
-const ADMIN_CREDENTIALS: { username: string; password: string; role: string; name: string }[] = [
-  { username: 'akhdan', password: 'FTIK888', role: 'Administrator Desa', name: 'Akhdan' },
-  { username: 'admin', password: 'desa2026', role: 'Administrator Desa', name: 'Petugas PTSP' },
-  { username: 'kades', password: 'menteng2026', role: 'Kepala Desa', name: 'Kepala Desa' },
-];
+interface UserRow {
+  username: string;
+  password_hash: string;
+  role: string;
+  name: string;
+}
 
-authRouter.post('/login', (req: Request, res: Response) => {
+authRouter.post('/login', async (req: Request, res: Response) => {
   const { username, password } = req.body || {};
   if (!username || !password) {
     return res.status(400).json({ message: 'Username dan password wajib diisi' });
   }
 
-  const account = ADMIN_CREDENTIALS.find(
-    (acc) => acc.username === username && acc.password === password
-  );
+  try {
+    const rows = await query<UserRow>(
+      'SELECT username, password_hash, role, name FROM users WHERE username = $1',
+      [username]
+    );
+    if (!rows.length) {
+      return res.status(401).json({ message: 'Username atau password salah' });
+    }
 
-  if (!account) {
-    return res.status(401).json({ message: 'Username atau password salah' });
+    const user = rows[0];
+    const valid = bcrypt.compareSync(password, user.password_hash);
+    if (!valid) {
+      return res.status(401).json({ message: 'Username atau password salah' });
+    }
+
+    const token = jwt.sign(
+      { username: user.username, role: user.role, name: user.name },
+      config.jwtSecret,
+      { expiresIn: config.jwtExpiresIn as jwt.SignOptions['expiresIn'] }
+    );
+
+    res.json({
+      token,
+      role: user.role,
+      name: user.name,
+      username: user.username,
+    });
+  } catch (err) {
+    console.error('Login error:', err);
+    res.status(500).json({ message: 'Terjadi kesalahan pada server' });
   }
-
-  res.json({
-    token: randomUUID(),
-    role: account.role,
-    name: account.name,
-    username: account.username,
-  });
 });
